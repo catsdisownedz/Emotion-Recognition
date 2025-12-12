@@ -1,23 +1,20 @@
-"""
-Application entry point with dark theme.
-"""
-
+# gui/app.py
 import sys
 from PyQt5.QtWidgets import QApplication
-import pyqtdarktheme
 
-from .main_window import EmotionRecognitionGUI
+from gui.main_window import EmotionRecognitionGUI
 
 
 def run():
-    """Run the application."""
     app = QApplication(sys.argv)
-    
-    # Apply modern dark theme
-    app.setStyleSheet(pyqtdarktheme.load_stylesheet("dark"))
-    
-    # Create and show main window
+
+    # Apply dark theme (correct module name)
+    try:
+        import qdarktheme
+        app.setStyleSheet(qdarktheme.load_stylesheet("dark"))
+    except Exception as e:
+        print("Dark theme not applied:", e)
+
     window = EmotionRecognitionGUI()
     window.show()
-    
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
