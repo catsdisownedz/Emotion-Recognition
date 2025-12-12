@@ -3,7 +3,7 @@ Application entry point with dark theme.
 """
 
 import sys
-from PyQt6.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication
 import pyqtdarktheme
 
 from .main_window import EmotionRecognitionGUI
