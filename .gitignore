@@ -16,3 +16,13 @@ build/
 coverage/
 htmlcov/
 notebooks/data/X.npy
+
+dataset/
+
+
+*.wav
+
+
+*.npy
+
+notebooks/models/
