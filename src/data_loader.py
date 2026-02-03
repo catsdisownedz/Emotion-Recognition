@@ -1,66 +1,60 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
-import os
+from tensorflow.keras.utils import to_categorical
 
-# Paths (can be overridden externally)
-DATA_DIR = "notebooks/data"
-X_FILE = "X.npy"
-Y_FILE = "y.npy"
-
-EMOTION_LABELS = [
-    "neutral", "calm", "happy", "sad",
-    "angry", "fearful", "disgust", "surprised"
-]
+# Global constants
+NUM_CLASSES = 8
+DATA_DIR = "data"    # folder where X.npy and y.npy are stored
 
 
-def load_data(data_dir=DATA_DIR):
-    """Load X.npy and y.npy from disk."""
-    X = np.load(os.path.join(data_dir, X_FILE))
-    y = np.load(os.path.join(data_dir, Y_FILE))
+def load_data():
+    """
+    Loads preprocessed arrays from .npy files.
+    X.npy must be shape (N,128,128,1)
+    y.npy must be shape (N,)
+    """
+    X = np.load(f"{DATA_DIR}/X.npy")
+    y = np.load(f"{DATA_DIR}/y.npy")
+
     print("Loaded X:", X.shape)
     print("Loaded y:", y.shape)
+
     return X, y
 
 
-def load_train_val_test(
-    data_dir=DATA_DIR,
-    test_size=0.15,
-    val_size=0.15,
-    random_state=42,
-    one_hot=True
-):
-    """Return proper train/val/test splits with matching shapes."""
+def load_train_val_test(test_size=0.15, val_size=0.15):
+    """
+    Loads X and y from .npy files,
+    one-hot encodes labels,
+    and returns train/val/test splits.
+    """
 
-    X, y = load_data(data_dir)
+    # Step 1: Load raw arrays
+    X, y = load_data()
 
-    # First split: train vs temp (val+test)
+    # Step 2: One-hot encode labels
+    y_onehot = to_categorical(y, num_classes=NUM_CLASSES)
+
+    # Step 3: Split into train + temp
     X_train, X_temp, y_train, y_temp = train_test_split(
-        X, y,
+        X, y_onehot,
         test_size=(test_size + val_size),
-        stratify=y,
-        random_state=random_state
+        shuffle=True,
+        random_state=42
     )
 
-    # Second split: val vs test (equal split of temp)
-    relative_val_size = val_size / (test_size + val_size)
+    # Step 4: Split temp into val + test
+    relative_val = val_size / (test_size + val_size)
 
     X_val, X_test, y_val, y_test = train_test_split(
         X_temp, y_temp,
-        test_size=1 - relative_val_size,  # test portion
-        stratify=y_temp,
-        random_state=random_state
+        test_size=1 - relative_val,
+        shuffle=True,
+        random_state=42
     )
 
-    # One-hot encoding
-    if one_hot:
-        num_classes = len(EMOTION_LABELS)
+    print("Train:", X_train.shape)
+    print("Val:  ", X_val.shape)
+    print("Test: ", X_test.shape)
 
-        y_train = np.eye(num_classes)[y_train]
-        y_val   = np.eye(num_classes)[y_val]
-        y_test  = np.eye(num_classes)[y_test]
-
-    print(f"Train: X={X_train.shape}, y={y_train.shape}")
-    print(f"Val:   X={X_val.shape}, y={y_val.shape}")
-    print(f"Test:  X={X_test.shape}, y={y_test.shape}")
-
-    return X_train, X_val, X_test, y_train, y_val, y_test, EMOTION_LABELS
+    return X_train, y_train, X_val, y_val, X_test, y_test
