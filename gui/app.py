@@ -1,20 +1,20 @@
-"""
-Application entry point.
-Uses the custom dark purple theme from styles.py.
-"""
-
+# gui/app.py
 import sys
-from PyQt6.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication
 
-from .main_window import EmotionRecognitionGUI
+from gui.main_window import EmotionRecognitionGUI
 
 
 def run():
-    """Run the application."""
     app = QApplication(sys.argv)
 
-    # Create and show main window
+    # Apply dark theme (correct module name)
+    try:
+        import qdarktheme
+        app.setStyleSheet(qdarktheme.load_stylesheet("dark"))
+    except Exception as e:
+        print("Dark theme not applied:", e)
+
     window = EmotionRecognitionGUI()
     window.show()
-
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
